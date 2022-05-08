@@ -21,7 +21,8 @@ func getAdminRoutes(router fiber.Router) {
 	// group admin routes
 	admin := router.Group("/admin")
 
-	admin.Get("/", adminController.GetAdmins)
+	admin.Get("/", adminController.GetAdminsCount)
 	admin.Post("/", adminController.NewAdmin)
+	admin.Get("/:id", adminController.ViewAdmin)
 
 }

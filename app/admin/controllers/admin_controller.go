@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"elivate9ja-go/app/admin/dtos"
 	"elivate9ja-go/app/admin/entities"
 	"elivate9ja-go/app/admin/requests"
 	"elivate9ja-go/app/admin/services"
@@ -21,7 +22,7 @@ func NewAdminController(adminService services.IAdminService, validate *validator
 	return &AdminController{adminService, validate}, nil
 }
 
-func (ac *AdminController) GetAdmins(c *fiber.Ctx) error {
+func (ac *AdminController) GetAdminsCount(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"success": true,
 		"count":   ac.adminService.GetAllAdminsCount(),
@@ -44,9 +45,9 @@ func (ac *AdminController) NewAdmin(c *fiber.Ctx) error {
 	err := ac.validate.Struct(createAdminRequest)
 	if err != nil {
 		/*
-		for _, e := range err.(validator.ValidationErrors) {
-			fmt.Println(e)
-		}
+			for _, e := range err.(validator.ValidationErrors) {
+				fmt.Println(e)
+			}
 		*/
 
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -81,5 +82,31 @@ func (ac *AdminController) NewAdmin(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"success": true,
 		"message": "Admin creation was successful.",
+	})
+}
+
+func (ac *AdminController) ViewAdmin(c *fiber.Ctx) error {
+	var err error
+	id, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": err.Error(),
+		})
+	}
+
+	admin, err := ac.adminService.GetAdmin(id)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"message": err.Error(),
+		})
+	}
+
+	viewAdminDTO := dtos.GetViewAdminDTO(admin)
+
+	return c.JSON(fiber.Map{
+		"success": true,
+		"data": viewAdminDTO,
 	})
 }

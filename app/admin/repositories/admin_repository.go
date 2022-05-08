@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/google/uuid"
 	"github.com/uptrace/bun"
 )
 
@@ -48,4 +49,49 @@ func (ar * AdminRepository) SaveAdmin(adminEntity entities.AdminEntity) (bool, e
 	}
 
 	return true, nil
+}
+
+func (ar *AdminRepository) GetAdmin(id uuid.UUID) (entities.AdminEntity, error) {
+	adminModel := new(models.Admin)
+	ctx := context.Background()
+	err := ar.db.NewSelect().Model(adminModel).Where("id = ?", id).Scan(ctx)
+	if err != nil {
+		// Log error and then create new error to send back
+		return entities.AdminEntity{}, err
+	}
+
+	return entities.AdminEntity{
+		ID: adminModel.ID,
+		Name: adminModel.FullName,
+		Email: adminModel.Email,
+		SuperAdmin: adminModel.SuperAdmin,
+		CreatedAt: adminModel.CreatedAt,
+		UpdatedAt: adminModel.UpdatedAt,
+	}, nil
+}
+
+func (ar *AdminRepository) GetAdmins() ([]entities.AdminEntity, error) {
+	var admins []entities.AdminEntity
+	var modelAdmins []models.Admin
+	ctx := context.Background()
+	_, err := ar.db.NewSelect().Model(&modelAdmins).ScanAndCount(ctx)
+	if err != nil {
+		// Log error then create new error to send back
+		return []entities.AdminEntity{}, err 
+	}
+
+	for _, adminModel := range modelAdmins {
+		adminEntity := entities.AdminEntity{
+			ID: adminModel.ID,
+			Name: adminModel.FullName,
+			Email: adminModel.Email,
+			SuperAdmin: adminModel.SuperAdmin,
+			CreatedAt: adminModel.CreatedAt,
+			UpdatedAt: adminModel.UpdatedAt,
+		}
+		admins = append(admins, adminEntity)
+	}
+
+	return admins, nil
+
 }
