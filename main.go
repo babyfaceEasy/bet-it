@@ -22,12 +22,6 @@ func main() {
 	// create fiber app
 	app := fiber.New(fiberConfig)
 
-	/*
-		db := utils.GetDBConnection()
-		adminController :=  di.InitializeAdminController(db)
-		app.Get("test-di", adminController.GetAdmins)
-	*/
-
 	// routes
 	app.Get("/health-check", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"message": "good"})
