@@ -25,7 +25,7 @@ func GetDBConnection() *bun.DB {
 
 func GetTestDBConnection() *bun.DB {
 	// open datbase connection
-	dsn := "postgresql://postgres:p@ssw0rd1@127.0.0.1:5432/elivate9jago_test_db?sslmode=disable"
+	dsn := os.Getenv("DATABASE_TEST_URL")
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 
 	// create bun object
