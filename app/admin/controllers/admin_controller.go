@@ -11,6 +11,9 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/go-playground/locales/en"
+	ut "github.com/go-playground/universal-translator"
+	en_translations "github.com/go-playground/validator/v10/translations/en"
 )
 
 type AdminController struct {
@@ -27,6 +30,20 @@ func (ac *AdminController) GetAdminsCount(c *fiber.Ctx) error {
 		"success": true,
 		"count":   ac.adminService.GetAllAdminsCount(),
 	})
+}
+
+func translateError(err error, trans ut.Translator) (errs []error) {
+	if err == nil {
+		return nil
+	}
+
+	validationErrs := err.(validator.ValidationErrors)
+	for _, e := range validationErrs{
+		translatedErr := fmt.Errorf(e.Translate(trans))
+		errs = append(errs, translatedErr) 
+	}
+
+	return errs
 }
 
 func (ac *AdminController) NewAdmin(c *fiber.Ctx) error {
@@ -50,9 +67,18 @@ func (ac *AdminController) NewAdmin(c *fiber.Ctx) error {
 			}
 		*/
 
+		//https://raw.githubusercontent.com/go-playground/validator/master/_examples/translations/main.go
+		english := en.New()
+		uni := ut.New(english, english)
+		trans, _ := uni.GetTranslator("en")
+		_ = en_translations.RegisterDefaultTranslations(ac.validate, trans)
+
+		errs := translateError(err, trans)
+		fmt.Printf("%v\n",errs)
+
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"success": false,
-			"message": err.Error(),
+			"message": errs[0].Error(),
 		})
 	}
 
