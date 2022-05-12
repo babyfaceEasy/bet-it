@@ -95,3 +95,43 @@ func (ar *AdminRepository) GetAdmins() ([]entities.AdminEntity, error) {
 	return admins, nil
 
 }
+
+func (ar *AdminRepository) VerifyAdmin(email, password string) (bool, error) {
+	ctx := context.Background()
+	exists, err := ar.db.NewSelect().
+		Model((*models.Admin)(nil)).
+		Where("email = ?", email).
+		Where("password = ?", password).
+		Exists(ctx)
+	if err != nil {
+		// log error, inspect and create new error
+		return false, err
+	}
+
+	if !exists {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (ar *AdminRepository) GetAdminByEmail(email string) (entities.AdminEntity, error) {
+	adminModel := new(models.Admin)
+	ctx := context.Background()
+	err := ar.db.NewSelect().Model(adminModel).
+		Where("email = ?", email).
+		Scan(ctx)
+	if err != nil {
+		//log error and then create more friendly error to return
+		return entities.AdminEntity{}, err
+	}
+
+	return entities.AdminEntity{
+		ID: adminModel.ID,
+		Name: adminModel.FullName,
+		Email: adminModel.Email,
+		SuperAdmin: adminModel.SuperAdmin,
+		CreatedAt: adminModel.CreatedAt,
+		UpdatedAt: adminModel.UpdatedAt,
+	}, nil
+}

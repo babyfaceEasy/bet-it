@@ -26,3 +26,5 @@ func InitializeAdminController(db bun.IDB) (*controllers.AdminController, error)
 	wire.Build(controllers.NewAdminController, AdminControllerSet)
 	return &controllers.AdminController{}, nil
 }
+
+func InitializeAdminService()
