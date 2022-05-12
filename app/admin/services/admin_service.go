@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 )
 
-
 type AdminService struct {
 	repo repositories.IAdminRepository
 }
@@ -17,13 +16,13 @@ func NewAdminService(repo repositories.IAdminRepository) (*AdminService, error) 
 }
 
 func (as *AdminService) GetAllAdminsCount() int {
-	totalAdmins :=  as.repo.CountAdmins()
+	totalAdmins := as.repo.CountAdmins()
 
 	return totalAdmins
 }
 
 func (as *AdminService) CreateAdmin(adminEntity entities.AdminEntity) (bool, error) {
-	response, err :=  as.repo.SaveAdmin(adminEntity)
+	response, err := as.repo.SaveAdmin(adminEntity)
 	if err != nil {
 		// plan, format a service like error based on the db type error pased back.
 		return response, err
@@ -32,7 +31,7 @@ func (as *AdminService) CreateAdmin(adminEntity entities.AdminEntity) (bool, err
 	return response, err
 }
 
-func (as * AdminService) GetAdmin(identifier uuid.UUID) (entities.AdminEntity, error) {
+func (as *AdminService) GetAdmin(identifier uuid.UUID) (entities.AdminEntity, error) {
 	response, err := as.repo.GetAdmin(identifier)
 	if err != nil {
 		return response, err
@@ -48,4 +47,23 @@ func (as *AdminService) GetAdmins() ([]entities.AdminEntity, error) {
 	}
 
 	return response, err
+}
+
+func (as *AdminService) VerifyAdmin(email, password string) (bool, error) {
+	response, err := as.repo.VerifyAdmin(email, password)
+	if err != nil {
+		return false, err
+	}
+
+	return response, nil
+}
+
+func (as *AdminService) GetAdminByEmail(email string) (entities.AdminEntity, error) {
+	response, err := as.repo.GetAdminByEmail(email)
+	if err != nil {
+		// inspect error and return what is better
+		return response, err
+	}
+
+	return response, nil
 }

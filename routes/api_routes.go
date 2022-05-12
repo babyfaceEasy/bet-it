@@ -10,5 +10,6 @@ func GetAPIRoutes(app *fiber.App) {
 
 	getAdminRoutes(api)
 	getCustomerRoutes(api)
+	getAuthRoutes(api)
 
 }
