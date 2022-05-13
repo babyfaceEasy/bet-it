@@ -10,11 +10,11 @@ import (
 )
 
 type AuthService struct {
-	adminService *services.IAdminService
+	adminService services.IAdminService
 }
 
-func NewAuthService() *AuthService {
-	return &AuthService{}
+func NewAuthService(adminService services.IAdminService) *AuthService {
+	return &AuthService{adminService}
 }
 
 func (as *AuthService) LogCustomerIn(email, password string) error {
@@ -23,7 +23,11 @@ func (as *AuthService) LogCustomerIn(email, password string) error {
 
 func (as *AuthService) LogAdminIn(email, password string) error {
 
-	if !as.adminService.VerifyAdmin(email, password) {
+	response, err := as.adminService.VerifyAdmin(email, password)
+	if err != nil {
+		return errors.New("this user does not exist")
+	}
+	if !response {
 		return errors.New("this user does not exist")
 	}
 
@@ -33,7 +37,7 @@ func (as *AuthService) LogAdminIn(email, password string) error {
 		return errors.New("admin with this email does not exist")
 	}
 
-	adminClaim := &jwt.MapClaims{"email": adminUser.email, "isAdmin": true}
+	adminClaim := &jwt.MapClaims{"email": adminUser.Email, "isAdmin": true}
 	token, err := middlewares.Encode(adminClaim, 1000)
 	if err != nil {
 		// TODO: can log erorr here
