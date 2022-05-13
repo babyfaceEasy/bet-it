@@ -7,7 +7,7 @@ import (
 )
 
 type IAdminService interface {
-	VerifyAdmin(email string, password string) bool
+	VerifyAdmin(email string, password string) (bool, error)
 	GetAdminByEmail(email string) (entities.AdminEntity, error)
 	GetAllAdminsCount() int
 	CreateAdmin(entities.AdminEntity) (bool, error)

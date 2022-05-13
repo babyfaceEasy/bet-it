@@ -10,6 +10,8 @@ import (
 	"elivate9ja-go/app/admin/controllers"
 	"elivate9ja-go/app/admin/repositories"
 	"elivate9ja-go/app/admin/services"
+	controllers2 "elivate9ja-go/app/auth/controllers"
+	services2 "elivate9ja-go/app/auth/services"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/wire"
 	"github.com/uptrace/bun"
@@ -34,6 +36,35 @@ func InitializeAdminController(db bun.IDB) (*controllers.AdminController, error)
 	return adminController, nil
 }
 
+func InitializeAdminService(db bun.IDB) (*services.AdminService, error) {
+	adminRepository, err := repositories.NewAdminRepository(db)
+	if err != nil {
+		return nil, err
+	}
+	adminService, err := services.NewAdminService(adminRepository)
+	if err != nil {
+		return nil, err
+	}
+	return adminService, nil
+}
+
+func InitializeAuthController(db bun.IDB) (*controllers2.AuthController, error) {
+	adminRepository, err := repositories.NewAdminRepository(db)
+	if err != nil {
+		return nil, err
+	}
+	adminService, err := services.NewAdminService(adminRepository)
+	if err != nil {
+		return nil, err
+	}
+	authService := services2.NewAuthService(adminService)
+	authController, err := controllers2.NewAuthController(authService)
+	if err != nil {
+		return nil, err
+	}
+	return authController, nil
+}
+
 // wire.go:
 
 func provideValidator() *validator.Validate {
@@ -41,3 +72,7 @@ func provideValidator() *validator.Validate {
 }
 
 var AdminControllerSet = wire.NewSet(services.NewAdminService, wire.Bind(new(services.IAdminService), new(*services.AdminService)), repositories.NewAdminRepository, wire.Bind(new(repositories.IAdminRepository), new(*repositories.AdminRepository)), provideValidator)
+
+var AdminServiceSet = wire.NewSet(repositories.NewAdminRepository, wire.Bind(new(repositories.IAdminRepository), new(*repositories.AdminRepository)))
+
+var AuthServiceSet = wire.NewSet(services2.NewAuthService, wire.Bind(new(services2.IAuthService), new(*services2.AuthService)), services.NewAdminService, wire.Bind(new(services.IAdminService), new(*services.AdminService)), repositories.NewAdminRepository, wire.Bind(new(repositories.IAdminRepository), new(*repositories.AdminRepository)))
